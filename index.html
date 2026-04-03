@@ -61,10 +61,9 @@
     }
 
     /* CONTENEDOR FINAL CON HALO ESTÁTICO */
-    /* Usamos ::before para proyectar el halo detrás de la imagen */
     .final-stage-container {
       display: flex; flex-direction: column; align-items: center; gap: 30px; 
-      position: relative; /* Clave para el pseudo-elemento */
+      position: relative;
       width: 100%; height: 100%;
       justify-content: center;
     }
@@ -72,18 +71,15 @@
     .final-stage-container::before {
       content: '';
       position: absolute;
-      /* Centrado en la pantalla */
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      /* Tamaño del halo grande */
       width: 120vh; height: 120vh; 
-      /* Gradiente radial similar al overlay, pero permanente */
       background: radial-gradient(circle, 
         rgba(255,255,255,1) 0%, 
-        rgba(255,255,255,1) 30%, /* Centro blanco más denso */
+        rgba(255,255,255,1) 30%, 
         rgba(255,255,255,0.8) 50%, 
         rgba(255,255,255,0) 75%);
-      z-index: -1; /* Detrás del texto y la imagen */
+      z-index: -1;
       pointer-events: none;
     }
 
@@ -187,7 +183,7 @@
 
   <script>
     // --- ⚙️ CONFIGURACIÓN ---
-    const DURACION_GIF_DESPIERTA = 4800;  // <-- AHORA ES 4800ms
+    const DURACION_GIF_DESPIERTA = 4000; 
     const IMGS_SI = ['si/gatosFelices1.png', 'si/gatosFelices2.png', 'si/gatosFelices3.png'];
     const IMGS_NO = ['no/gatoLlorando1.png', 'no/gatoLlorando2.png', 'no/gatoLlorando3.png', 'no/gatoLlorando4.png', 'no/gatoLlorando5.png'];
     
@@ -201,10 +197,10 @@
     ];
 
     const FRASES_EVASION = [
-      " segura no quieres?", 
-      " pucha, entonces no?", 
-      " pi\xE9nsalo bien", 
-      " \xFAltima oportunidad, quieres o ya no?"
+      "¿Segura no quieres?", 
+      "Pucha, ¿entonces no?", 
+      "Pi\xE9nsalo bien...", 
+      "¿Última oportunidad, quieres o ya no?"
     ];
 
     const POS_CORAZONES = [
@@ -360,23 +356,16 @@
     }
 
     bSi.addEventListener('click', () => {
-      // 1. Borrar corazones
       document.querySelectorAll('.corazon-secreto').forEach(c => c.remove());
-      
-      // 2. Ocultar halo de hover inmediatamente
       document.getElementById('overlay-container').style.opacity = '0';
       isHoverSi = false;
       
-      // 3. Reemplazar contenido con la clase final-stage-container que tiene el halo CSS ::before
       document.getElementById('app').innerHTML = `
         <div class="final-stage-container">
-            
             <div class="bubble-text" style="font-size:4.6rem; color: #d63384; max-width: 95%; line-height: 1.1; padding: 25px 40px;">
                 Yuuuuupiii! ahora somos estos
             </div>
-            
             <img src="si/gatosFelices3.png?t=${Date.now()}" style="width:700px; border-radius:40px; margin-top:30px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); position: relative; z-index: 2;">
-            
             <div class="bubble-text" style="font-size: 3rem; margin-top: 25px; padding: 20px 35px;">
                 Te quiero, mensa
             </div>
