@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mensa tqm ✨</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Georgia', serif;
+      background-color: #fdf6f0;
+      background-image: url('fondo.png'); 
+      background-size: cover; background-position: center; background-attachment: fixed;
+      min-height: 100vh; overflow: hidden;
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    /* CAPA INTRO */
+    #intro-layer {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      transition: opacity 1.5s ease-in-out; background: #fdf6f0; 
+    }
+    #intro-gif-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; }
+    #intro-text-container { 
+      text-align: center; cursor: pointer; padding: 2rem;
+      background: rgba(255, 255, 255, 0.8); border-radius: 20px; backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 80%;
+      user-select: none;
+    }
+
+    /* HALO DE LUZ (HOVER BOTONES) */
+    #overlay-container {
+      position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+      background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 45%, rgba(255,255,255,0) 90%);
+    }
+    .overlay-layer {
+      position: absolute; inset: 0; background-size: contain; 
+      background-position: center; background-repeat: no-repeat;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    /* APP PRINCIPAL */
+    #app { 
+      display: none; position: relative; z-index: 10; 
+      text-align: center; width: 100%; opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    /* CUADROS DE TEXTO ESTILIZADOS */
+    .bubble-text {
+      background: white;
+      padding: 15px 25px;
+      border-radius: 20px;
+      font-weight: bold;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    /* CONTENEDOR FINAL CON HALO ESTÁTICO */
+    /* Usamos ::before para proyectar el halo detrás de la imagen */
+    .final-stage-container {
+      display: flex; flex-direction: column; align-items: center; gap: 30px; 
+      position: relative; /* Clave para el pseudo-elemento */
+      width: 100%; height: 100%;
+      justify-content: center;
+    }
+
+    .final-stage-container::before {
+      content: '';
+      position: absolute;
+      /* Centrado en la pantalla */
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      /* Tamaño del halo grande */
+      width: 120vh; height: 120vh; 
+      /* Gradiente radial similar al overlay, pero permanente */
+      background: radial-gradient(circle, 
+        rgba(255,255,255,1) 0%, 
+        rgba(255,255,255,1) 30%, /* Centro blanco más denso */
+        rgba(255,255,255,0.8) 50%, 
+        rgba(255,255,255,0) 75%);
+      z-index: -1; /* Detrás del texto y la imagen */
+      pointer-events: none;
+    }
+
+    .corazon-secreto {
+      position: fixed; width: 75px; height: 75px;
+      z-index: 50; cursor: pointer;
+      background-image: url('corazon_textura.png');
+      background-size: contain; background-repeat: no-repeat;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .corazon-secreto:hover { transform: scale(1.2) rotate(10deg); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1)); }
+
+    #contenedor-botones { display: flex; gap: 4rem; justify-content: center; align-items: center; min-height: 250px; }
+    
+    .btn-contenedor {
+      position: relative; width: 220px; height: 90px; z-index: 60;
+      cursor: pointer; border: 4px solid #3a2e28; border-radius: 20px; 
+      box-shadow: 0 8px 0 #3a2e28; background: #fff;
+      transition: transform 0.3s ease, left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .bg-layer { 
+      position: absolute; inset: 0; background-size: cover; background-position: center; 
+      border-radius: 15px; transition: opacity 1.5s ease-in-out; z-index: 1; 
+    }
+    
+    .hover-tint { position: absolute; inset: 0; z-index: 3; opacity: 0; transition: opacity 0.6s ease; border-radius: 15px; pointer-events: none; }
+    #btn-si:hover .hover-tint { opacity: 1; background: rgba(76, 175, 80, 0.35); }
+    #btn-no:hover .hover-tint { opacity: 1; background: rgba(244, 67, 54, 0.35); }
+
+    .btn-texto { position: relative; z-index: 5; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); border-radius: 15px; }
+
+    .tooltip { 
+      position: absolute; top: -115px; left: 50%; transform: translateX(-50%); 
+      width: 260px; background: #3a2e28; color: white; padding: 15px; 
+      border-radius: 15px; font-size: 0.95rem; opacity: 0; pointer-events: none; 
+      transition: opacity 0.4s ease, transform 0.4s ease; z-index: 200; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .tooltip::after {
+      content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+      border-width: 10px 10px 0; border-style: solid; border-color: #3a2e28 transparent transparent transparent;
+    }
+    .btn-contenedor:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+    #visor-recuerdos {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+      z-index: 2000; display: none; justify-content: center; align-items: center;
+      opacity: 0; transition: opacity 0.5s ease;
+    }
+    #dibujo-cita { max-height: 75vh; border: 10px solid white; border-radius: 20px; }
+  </style>
+</head>
+<body>
+
+  <audio id="musica-fondo" loop><source src="musica.mp3" type="audio/mpeg"></audio>
+
+  <div id="intro-layer">
+    <img id="intro-gif-bg" src="intro/gato_duerme.gif">
+    <div id="intro-text-container">
+      <p id="intro-text" style="font-size: 1.2rem; font-weight: bold;">Zzz... est&aacute; durmiendo</p>
+      <p id="click-hint" style="font-style: italic; color: #7a6e65; margin-top: 10px;">Haz clic para despertar</p>
+    </div>
+  </div>
+
+  <div id="overlay-container">
+    <div id="ov-l1" class="overlay-layer" style="opacity: 0;"></div>
+    <div id="ov-l2" class="overlay-layer" style="opacity: 0;"></div>
+  </div>
+
+  <div id="app">
+    <div style="height: 160px; margin-bottom: 20px;"></div>
+    <p id="pregunta" class="bubble-text" style="font-size: 1.5rem;">&iquest;Quieres pololear conmigo?</p>
+    
+    <div id="contenedor-botones">
+      <div id="btn-si" class="btn-contenedor">
+        <div class="tooltip"><b>pros:</b> Pololeas<br><b>contras:</b> Conmigo</div>
+        <div class="bg-layer l1" style="opacity: 1;"></div>
+        <div class="bg-layer l2" style="opacity: 0;"></div>
+        <div class="hover-tint"></div>
+        <div class="btn-texto">S&iacute; 🥰</div>
+      </div>
+
+      <div id="btn-no" class="btn-contenedor">
+        <div class="tooltip"><b>pros:</b> Ninguno :p<br><b>contras:</b> No m&aacute;s dibujos :c</div>
+        <div class="bg-layer l1" style="opacity: 1;"></div>
+        <div class="bg-layer l2" style="opacity: 0;"></div>
+        <div class="hover-tint"></div>
+        <div class="btn-texto">No</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="visor-recuerdos" onclick="cerrarRecuerdo()">
+    <div style="text-align:center; color:white; max-width: 90%;">
+      <img id="dibujo-cita" src="">
+      <p id="texto-cita" style="font-size:1.5rem; margin-top:20px; font-style:italic; line-height: 1.4;"></p>
+      <p style="margin-top:10px; opacity:0.7;">(Clic para cerrar)</p>
+    </div>
+  </div>
+
+  <script>
+    // --- ⚙️ CONFIGURACIÓN ---
+    const DURACION_GIF_DESPIERTA = 4800;  // <-- AHORA ES 4800ms
+    const IMGS_SI = ['si/gatosFelices1.png', 'si/gatosFelices2.png', 'si/gatosFelices3.png'];
+    const IMGS_NO = ['no/gatoLlorando1.png', 'no/gatoLlorando2.png', 'no/gatoLlorando3.png', 'no/gatoLlorando4.png', 'no/gatoLlorando5.png'];
+    
+    const RECUERDOS = [
+      { img: 'recuerdos/cita1.png', txt: 'Sausalito; La chaqueta no era el problema creo' },
+      { img: 'recuerdos/cita2.png', txt: 'Comida china; deb\xED hacerte caso y pedir chorrillana :(' },
+      { img: 'recuerdos/cita3.png', txt: 'Cerro alegre; En mi mente quedaba m\xE1s cerca... alg\xFAn d\xEDa encontraremos el resbalin' },
+      { img: 'recuerdos/cita4.png', txt: 'Paseo Bar\xF3n; Harry Potter y su pareja seg\xFAn un random' },
+      { img: 'recuerdos/cita5.png', txt: 'Jard\xEDn Bot\xE1nico; Met\xED un pie al agua y me hablaste feo... pero comimos sand\xEDa' },
+      { img: 'recuerdos/origen.png', txt: 'Azar y una Storie; Nunca lo imagin\xE9 <3' }
+    ];
+
+    const FRASES_EVASION = [
+      "1 segura no quieres?", 
+      "2 pucha, entonces no?", 
+      "3 pi\xE9nsalo bien", 
+      "4 \xFAltima oportunidad, quieres o ya no?"
+    ];
+
+    const POS_CORAZONES = [
+      { top: '5%', left: '5%' }, { top: '5%', right: '5%' },
+      { top: '45%', left: '2%' }, { top: '45%', right: '2%' },
+      { bottom: '8%', left: '10%' }, { bottom: '8%', right: '10%' }
+    ];
+
+    let fase = "inicio";
+    let isHoverSi = false, isHoverNo = false;
+    let siObj = {val: 0}, noObj = {val: 0};
+    const musica = document.getElementById('musica-fondo');
+    const bSi = document.getElementById('btn-si'), bNo = document.getElementById('btn-no');
+
+    function animarBoton(btnId, images, currentIdxObj) {
+      const btn = document.getElementById(btnId);
+      const l1 = btn.querySelector('.l1'), l2 = btn.querySelector('.l2');
+      currentIdxObj.val = (currentIdxObj.val + 1) % images.length;
+      const nextImg = images[currentIdxObj.val];
+
+      if (l1.style.opacity == '1') {
+        l2.style.backgroundImage = `url('${nextImg}')`;
+        l1.style.opacity = '0'; l2.style.opacity = '1';
+      } else {
+        l1.style.backgroundImage = `url('${nextImg}')`;
+        l1.style.opacity = '1'; l2.style.opacity = '0';
+      }
+
+      if ((btnId === 'btn-si' && isHoverSi) || (btnId === 'btn-no' && isHoverNo)) {
+        actualizarHalo(nextImg);
+      }
+    }
+
+    function actualizarHalo(img) {
+      const h1 = document.getElementById('ov-l1'), h2 = document.getElementById('ov-l2');
+      if (h1.style.opacity == '1') {
+        h2.style.backgroundImage = `url('${img}')`;
+        h1.style.opacity = '0'; h2.style.opacity = '1';
+      } else {
+        h1.style.backgroundImage = `url('${img}')`;
+        h1.style.opacity = '1'; h2.style.opacity = '0';
+      }
+    }
+
+    document.getElementById('intro-layer').addEventListener('click', () => {
+      if (fase === "inicio") {
+        fase = "despertando";
+        musica.volume = 0.3; musica.play();
+        document.getElementById('intro-gif-bg').src = "intro/gato_despierta_gafas.gif?t=" + Date.now();
+        document.querySelector('#intro-text').innerHTML = "Uy, ya voy...";
+        document.getElementById('click-hint').style.display = "none";
+
+        setTimeout(() => {
+          if (fase === "despertando") {
+            document.getElementById('intro-gif-bg').src = "intro/gato_saludo.gif?t=" + Date.now();
+            document.querySelector('#intro-text').innerHTML = "Listo, te quer\xEDa preguntar algo...";
+            document.getElementById('click-hint').innerHTML = "Siguiente...";
+            document.getElementById('click-hint').style.display = "block";
+            fase = "pre-pregunta";
+          }
+        }, DURACION_GIF_DESPIERTA);
+
+      } else if (fase === "pre-pregunta" || fase === "despertando") {
+        fase = "finalizando";
+        document.getElementById('intro-layer').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('intro-layer').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+          document.querySelector('#btn-si .l1').style.backgroundImage = `url('${IMGS_SI[0]}')`;
+          document.querySelector('#btn-no .l1').style.backgroundImage = `url('${IMGS_NO[0]}')`;
+          crearCorazones();
+          setTimeout(() => { 
+            document.getElementById('app').style.opacity = '1'; 
+            setInterval(() => animarBoton('btn-si', IMGS_SI, siObj), 4000);
+            setInterval(() => animarBoton('btn-no', IMGS_NO, noObj), 4000);
+          }, 50);
+        }, 1500);
+      }
+    });
+
+    bSi.addEventListener('mouseenter', () => { 
+        isHoverSi = true; 
+        document.getElementById('overlay-container').style.opacity = '1'; 
+        actualizarHalo(IMGS_SI[siObj.val]); 
+    });
+    
+    bNo.addEventListener('mouseenter', () => { 
+        if(estadoNo === "evasion") { huir(); }
+        else { 
+            isHoverNo = true; 
+            document.getElementById('overlay-container').style.opacity = '1'; 
+            actualizarHalo(IMGS_NO[noObj.val]); 
+        }
+    });
+    
+    [bSi, bNo].forEach(b => b.addEventListener('mouseleave', () => { 
+        isHoverSi = false; isHoverNo = false; 
+        document.getElementById('overlay-container').style.opacity = '0'; 
+        document.getElementById('ov-l1').style.opacity = '0';
+        document.getElementById('ov-l2').style.opacity = '0';
+    }));
+
+    function crearCorazones() {
+      RECUERDOS.forEach((data, i) => {
+        const c = document.createElement('div');
+        c.className = 'corazon-secreto';
+        Object.assign(c.style, POS_CORAZONES[i]);
+        c.onclick = (e) => { e.stopPropagation(); abrirRecuerdo(data); };
+        document.body.appendChild(c);
+      });
+    }
+
+    function abrirRecuerdo(data) {
+      document.getElementById('dibujo-cita').src = data.img;
+      document.getElementById('texto-cita').textContent = data.txt;
+      document.getElementById('visor-recuerdos').style.display = 'flex';
+      setTimeout(() => document.getElementById('visor-recuerdos').style.opacity = '1', 10);
+    }
+
+    function cerrarRecuerdo() {
+      document.getElementById('visor-recuerdos').style.opacity = '0';
+      setTimeout(() => document.getElementById('visor-recuerdos').style.display = 'none', 500);
+    }
+
+    let estadoNo = "normal", fraseIdx = 0;
+
+    bNo.addEventListener('click', () => {
+      if (estadoNo === "evasion") return;
+      if (fraseIdx < FRASES_EVASION.length) {
+        document.getElementById('pregunta').textContent = FRASES_EVASION[fraseIdx++];
+        bNo.style.transform = `scale(${1 - (fraseIdx*0.15)})`;
+        bSi.style.transform = `scale(${1 + (fraseIdx*0.3)})`;
+      } else {
+        estadoNo = "evasion";
+        const rect = bNo.getBoundingClientRect();
+        bNo.style.position = "fixed"; 
+        bNo.style.zIndex = "100";
+        bNo.style.left = rect.left + 'px';
+        bNo.style.top = rect.top + 'px';
+        bNo.style.margin = "0"; 
+        bNo.offsetHeight;
+        huir();
+      }
+    });
+
+    function huir() {
+      const maxW = window.innerWidth - bNo.offsetWidth - 20;
+      const maxH = window.innerHeight - bNo.offsetHeight - 20;
+      const x = Math.max(20, Math.random() * maxW);
+      const y = Math.max(20, Math.random() * maxH);
+      bNo.style.left = x + 'px';
+      bNo.style.top = y + 'px';
+    }
+
+    bSi.addEventListener('click', () => {
+      // 1. Borrar corazones
+      document.querySelectorAll('.corazon-secreto').forEach(c => c.remove());
+      
+      // 2. Ocultar halo de hover inmediatamente
+      document.getElementById('overlay-container').style.opacity = '0';
+      isHoverSi = false;
+      
+      // 3. Reemplazar contenido con la clase final-stage-container que tiene el halo CSS ::before
+      document.getElementById('app').innerHTML = `
+        <div class="final-stage-container">
+            
+            <div class="bubble-text" style="font-size:4.6rem; color: #d63384; max-width: 95%; line-height: 1.1; padding: 25px 40px;">
+                Yuuuuupiii! ahora somos estos
+            </div>
+            
+            <img src="si/gatosFelices3.png?t=${Date.now()}" style="width:700px; border-radius:40px; margin-top:30px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); position: relative; z-index: 2;">
+            
+            <div class="bubble-text" style="font-size: 3rem; margin-top: 25px; padding: 20px 35px;">
+                Te quiero, mensa
+            </div>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>

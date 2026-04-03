@@ -1,0 +1,136 @@
+/* ===== RESET Y BASE ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Georgia, serif;
+  background-color: #fdf6f0;
+  color: #3a2e28;
+  min-height: 100vh;
+  overflow: hidden; /* Importante: evita scrollbars cuando el botón se mueve */
+}
+/* ===== LA CAPA MÁGICA DE PANTALLA COMPLETA ===== */
+#pantalla-completa-overlay {
+  position: fixed; /* Se fija a la ventana, no a la página */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Ancho y alto del Viewport */
+  height: 100vh;
+  
+  /* Centrado de la imagen dentro del overlay */
+  background-size: cover; /* Cubre todo el espacio sin deformar */
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  /* Transición suave de transparencia */
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+  
+  /* Z-INDEX IMPORTANTE: Mayor que el fondo, menor que los botones (1) */
+  z-index: 5; 
+}
+
+/* Clases para controlar la visibilidad con JS */
+.overlay-visible {
+  opacity: 0.8; /* Transparente al 80% para un efecto de 'sueño' */
+  visibility: visible;
+}
+
+.overlay-oculto {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ===== ACTUALIZAR TUS BOTONES ===== */
+#contenedor-botones {
+  /* ... tus estilos de centrado ... */
+  position: relative;
+  z-index: 10; /* Z-INDEX IMPORTANTE: Mayor que el overlay (5) */
+}
+
+/* Opcional: Dale un fondo sutil a los botones para que resalten sobre el overlay */
+button {
+  background: rgba(253, 246, 240, 0.9); /* El color crema de tu body con transparencia */
+  /* ... tus otros estilos ... */
+}
+/* ===== PANTALLA PRINCIPAL ===== */
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#contenedor-central {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+#pregunta {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  max-width: 480px;
+  line-height: 1.5;
+  transition: opacity 0.3s ease; /* Para fade al cambiar texto */
+}
+
+/* ===== BOTONES ===== */
+#contenedor-botones {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-family: inherit;
+  border: 2px solid #3a2e28;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: transform 0.25s ease, font-size 0.25s ease, background 0.2s;
+}
+
+button:hover {
+  background: #3a2e28;
+  color: #fdf6f0;
+}
+
+/* El botón "No" usa position absolute en la Fase de Evasión.
+   Necesita estar fuera del flujo normal del documento. */
+#btn-no {
+  position: static; /* Cambiará a absolute via JS */
+}
+
+/* ===== PANTALLA DE ÉXITO ===== */
+#pantalla-exito {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#mensaje-exito {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  text-align: center;
+  padding: 2rem;
+  animation: aparecer 0.8s ease forwards;
+}
+
+/* ===== UTILIDADES ===== */
+.oculto {
+  display: none !important;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
